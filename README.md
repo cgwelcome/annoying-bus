@@ -24,6 +24,8 @@ By default, the software extracts the current date schedule from Toronto to Mont
 >>> bus = AnnoyingBus()
 >>> content = bus.search()
 >>> content.show_all()
+```
+```
 Extracting day 1
 Montreal >>> Toronto
 Departure          Arrival            Duration      Price
