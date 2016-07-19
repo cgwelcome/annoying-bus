@@ -80,7 +80,7 @@ Rerverse the trip, e.g. Montreal to Toronto
 ### Tests
 Run all tests
 ```sh
-python -m unittest discover
+python -m unittest discover tests
 ```
 
 ### To-Do List
