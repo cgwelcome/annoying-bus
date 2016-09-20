@@ -26,20 +26,31 @@ By default, the software extracts the current date schedule from Toronto to Mont
 >>> content.show_all()
 ```
 ```
-Extracting day 1
-Montreal >>> Toronto
-Departure          Arrival            Duration      Price
------------------  -----------------  ----------  -------
-07/20/16 00:15:00  07/20/16 06:20:00  6:05          37.00
-07/20/16 06:30:00  07/20/16 12:25:00  5:55          42.00
-07/20/16 08:00:00  07/20/16 14:30:00  6:30          42.00
-07/20/16 09:30:00  07/20/16 15:15:00  5:45          42.00
-07/20/16 11:30:00  07/20/16 18:00:00  6:30          42.00
-07/20/16 13:30:00  07/20/16 19:15:00  5:45          37.00
-07/20/16 15:30:00  07/20/16 21:15:00  5:45          37.00
-07/20/16 17:00:00  07/20/16 23:30:00  6:30          32.00
-07/20/16 19:00:00  07/21/16 00:45:00  5:45          32.00
-07/20/16 21:00:00  07/21/16 03:00:00  6:00          32.00
+Megabus - Extracting day 1
+ViaRail - Extracting day 1
+Company    Origin    Destination    Date        Departure    Arrival    Duration      Price
+---------  --------  -------------  ----------  -----------  ---------  ----------  -------
+Megabus    Toronto   Montreal       2016-11-01  00:30        06:40      06:10            24
+Megabus    Toronto   Montreal       2016-11-01  06:30        12:15      05:45            10
+ViaRail    Toronto   Montreal       2016-11-01  06:40        11:57      05:17            61
+ViaRail    Toronto   Montreal       2016-11-01  06:40        15:47      09:07            44
+Megabus    Toronto   Montreal       2016-11-01  08:00        14:30      06:30            24
+ViaRail    Toronto   Montreal       2016-11-01  09:20        14:20      05:00            80
+ViaRail    Toronto   Montreal       2016-11-01  09:20        17:57      08:37            61
+Megabus    Toronto   Montreal       2016-11-01  10:00        16:20      06:20            10
+ViaRail    Toronto   Montreal       2016-11-01  10:45        17:57      07:12            44
+ViaRail    Toronto   Montreal       2016-11-01  10:45        20:28      09:43            44
+ViaRail    Toronto   Montreal       2016-11-01  11:30        16:47      05:17            80
+Megabus    Toronto   Montreal       2016-11-01  12:00        17:45      05:45            24
+ViaRail    Toronto   Montreal       2016-11-01  12:20        20:28      08:08            44
+Megabus    Toronto   Montreal       2016-11-01  14:00        20:30      06:30            24
+ViaRail    Toronto   Montreal       2016-11-01  15:15        20:09      04:54            80
+Megabus    Toronto   Montreal       2016-11-01  16:00        21:45      05:45            24
+ViaRail    Toronto   Montreal       2016-11-01  17:00        21:49      04:49            44
+Megabus    Toronto   Montreal       2016-11-01  17:30        23:15      05:45            10
+ViaRail    Toronto   Montreal       2016-11-01  18:00        22:55      04:55            44
+Megabus    Toronto   Montreal       2016-11-01  19:00        00:45      05:45            10
+Megabus    Toronto   Montreal       2016-11-01  21:00        03:10      06:10            10
 ```
 
 ### Configuration
@@ -80,11 +91,9 @@ Rerverse the trip, e.g. Montreal to Toronto
 ### Tests
 Run all tests
 ```sh
-python -m unittest discover
+python -m unittest discover tests
 ```
 
 ### To-Do List
-* Sqlite storage
-* Support Via Train, Greyhound
-* Support more destination
+* Support Greyhound
 
