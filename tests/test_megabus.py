@@ -11,62 +11,65 @@ class TestMegabus(unittest.TestCase):
 
     def test_cookies(self):
         web = MegabusWebsite()
-        web.create_request()
-        web.create_date_request(0, date.today())
+        web.container = Information()
+        web.update_date(date.today())
         self.assertEqual(web.load().history, [])
     
     def test_prices(self):
         dirpath = os.path.dirname(tests.__file__)
-        path = os.path.join(dirpath, "data", "JourneyResults.aspx.html")
+        path = os.path.join(dirpath, "data", "Megabus.html")
         with open(path, 'r') as f:
             content = f.read()
 
         soup = BeautifulSoup(content, "html.parser") 
         web = MegabusWebsite()
         web.container = Information()
-        web.get_prices(soup)
+        prices = []
+        for row in web.get_rows(soup):
+            web.set_price(row)
+            prices.append(web.container.row_info["Price"])
         l = ["59.00", "38.00", "38.00", "38.00", "38.00", "38.00",
              "38.00", "33.00", "38.00", "38.00", "43.00", "38.00",
              "33.00", "33.00"]
-        self.assertEqual(web.container.prices, l)
+        prices = [str(x) for x in prices]
+        self.assertEqual(prices, l)
 
     def test_departure(self):
         dirpath = os.path.dirname(tests.__file__)
-        path = os.path.join(dirpath, "data", "JourneyResults.aspx.html")
+        path = os.path.join(dirpath, "data", "Megabus.html")
         with open(path, 'r') as f:
             content = f.read()
 
         soup = BeautifulSoup(content, "html.parser") 
         web = MegabusWebsite()
+        departures = []
         web.container = Information()
-        web.travel_date = date(2016, 7, 22)
-        web.get_departure(soup)
-        times = [
-            time(0, 30), time(6, 30), time(7, 30),
-            time(8, 30), time(9, 30), time(10, 30),
-            time(12, 0), time(13, 30), time(14, 30),
-            time(16, 0), time(17, 0), time(18, 0),
-            time(19, 0), time(21, 0)]
-        dates = [datetime.combine(web.travel_date, t) for t in times]
-        self.assertEqual(web.container.departure, dates)
+        for row in web.get_rows(soup):
+            web.set_departure(row)
+            departures.append(web.container.row_info["Departure"])
+        l = ["00:30", "06:30", "07:30", "08:30", "09:30", "10:30",
+            "12:00", "13:30", "14:30", "16:00", "17:00", 
+            "18:00", "19:00", "21:00"]
+        departures = [str(x) for x in departures]
+        self.assertEqual(departures, l)
 
 
     def test_duration(self):
         dirpath = os.path.dirname(tests.__file__)
-        path = os.path.join(dirpath, "data", "JourneyResults.aspx.html")
+        path = os.path.join(dirpath, "data", "Megabus.html")
         with open(path, 'r') as f:
             content = f.read()
         soup = BeautifulSoup(content, "html.parser") 
         web = MegabusWebsite()
         web.container = Information()
-        web.get_duration(soup)
-        durations = [
-            timedelta(hours=6, minutes=10), timedelta(hours=5, minutes=45),
-            timedelta(hours=6, minutes=20), timedelta(hours=6, minutes=30),
-            timedelta(hours=5, minutes=45), timedelta(hours=6, minutes=20),
-            timedelta(hours=5, minutes=45), timedelta(hours=5, minutes=45),
-            timedelta(hours=6, minutes=30), timedelta(hours=5, minutes=45),
-            timedelta(hours=5, minutes=45), timedelta(hours=5, minutes=45),
-            timedelta(hours=5, minutes=45), timedelta(hours=6, minutes=10)]
-        self.assertEqual(web.container.duration, durations) 
+        durations = []
+        for row in web.get_rows(soup):
+            web.set_duration(row)
+            durations.append(web.container.row_info["Duration"])
+        l = [
+            "06:10", "05:45", "06:20", "06:30", "05:45", "06:20",
+            "05:45", "05:45", "06:30", "05:45",
+            "05:45", "05:45", "05:45", "06:10"]
+        durations = [str(x) for x in durations]
+        self.assertEqual(durations, l) 
 

@@ -1,38 +1,35 @@
 from tabulate import tabulate
-from datetime import datetime, timedelta
+import sqlite3
 
 class Information(object):
 
     def __init__(self):
-        self.prices = []
-        self.departure = []
-        self.arrival = []
-        self.duration = []
-        self.origin = None
-        self.destination = None
+        self.conn = sqlite3.connect(":memory:")
+        self.cursor = self.conn.cursor()
+        self.cursor.execute("""
+            CREATE TABLE journey 
+            (Company text, Origin text, Destination text, Date text, 
+            Departure text, Arrival text, Duration text, Price real)
+            """)
+        self.row_info = {} 
+    
+    def update_row(self):
+        self.cursor.execute("""
+            INSERT INTO journey (Company, Origin, Destination, Date,
+            Departure, Arrival, Duration, Price)
+            VALUES (:Company, :Origin, :Destination, :Date,
+            :Departure, :Arrival, :Duration, :Price)
+            """, self.row_info)
 
     def show_all(self):
-        self.create_arrival()
-        depart_fmt = self.date_fmt(self.departure)
-        arrive_fmt = self.date_fmt(self.arrival)
-        duration_fmt = self.duration_fmt(self.duration)
-        print("{} >>> {}".format(self.origin, self.destination))
-        print(tabulate(
-            zip(depart_fmt, arrive_fmt, duration_fmt, self.prices),
-            headers=['Departure', 'Arrival', 'Duration', 'Price'],
-            floatfmt=".2f"))
+        curs = self.conn.execute("SELECT * FROM journey")
+        headers = [description[0] for description in curs.description]
+        self.cursor.execute("""
+            SELECT * FROM journey ORDER BY datetime(Date), datetime(Departure)
+            """)
+        print(tabulate(self.cursor.fetchall(), headers=headers))
     
-    def create_arrival(self):
-        for depart, duration in zip(self.departure, self.duration):
-            self.arrival.append(depart + duration)
-    
-    def date_fmt(self, list_dates):
-        return [a_date.strftime("%c") for a_date in list_dates] 
-    
-    def duration_fmt(self, duration):
-        list_fmt = []
-        for d in duration:
-            hour = d.seconds//3600
-            minute = d.seconds//60%60
-            list_fmt.append("{0}:{1:0>2}".format(hour, minute))
-        return list_fmt
+    def close(self):
+        self.conn.commit()
+        self.conn.close()
+

@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from datetime import date, datetime, time, timedelta
+from datetime import datetime, time, timedelta
 from .website import Website
 import requests
 import re
@@ -7,7 +7,7 @@ import re
 class MegabusWebsite(Website):
 
     def __init__(self):
-        self.url= "http://ca.megabus.com/JourneyResults.aspx" 
+        self.url = "http://ca.megabus.com/JourneyResults.aspx" 
         self.cookies =  {"language": "en"}
         self.origin = "Toronto"
         self.destination = "Montreal"
@@ -15,49 +15,51 @@ class MegabusWebsite(Website):
             "Toronto": 145,
             "Montreal": 280
         }
-
-    def create_request(self):
-        self.request_values = {
+        self.params = {
             "originCode": self.regioncode[self.origin],
             "destinationCode": self.regioncode[self.destination],
             "passengerCount": 1 
         }
+        self.session = requests.Session()
+        self.session.cookies.update(self.cookies)
 
-    def create_date_request(self, no_day, date):
-        self.travel_date = date + timedelta(days=no_day)
-        formatted_date = self.travel_date.strftime("%d/%m/%y")
-        self.request_values["outbounddeparturedate"] = formatted_date
+    def update_date(self, date):
+        formatted_date = date.strftime("%d/%m/%y")
+        self.params["outbounddeparturedate"] = formatted_date
+        self.container.row_info["Date"] = date.strftime("%Y-%m-%d")
 
     def load(self):
-        d = {"params":self.request_values, "cookies": self.cookies}
-        return requests.get(self.url, **d)
+        return self.session.get(self.url, params=self.params)
+    
+    def get_company(self):
+        company = "Megabus"
+        self.container.row_info["Company"] = company 
+        return company
 
-    def get_prices(self, soup):
-        tags = soup.find_all("ul", id=re.compile("JourneyResylt"))
-        for tag in tags:
-            price = tag.contents[11].get_text(strip=True).split("$")[1]
-            self.container.prices.append(price)
-    
-    def get_departure(self, soup):
-        tags = soup.find_all("ul", id=re.compile("JourneyResylt"))
-        for tag in tags:
-            cell = tag.contents[3].get_text(strip=True)
-            departure_time_str = re.findall("[0-9]{2}:[0-9]{2}", cell)[0]
-            departure_time = time(*map(int, departure_time_str.split(":")))
-            departure_full = datetime.combine(self.travel_date, departure_time)
-            self.container.departure.append(departure_full)
-    
-    def get_duration(self, soup):
-        tags = soup.find_all("ul", id=re.compile("JourneyResylt"))
-        for tag in tags:
-            cell = tag.contents[5].get_text(strip=True)
-            hour, minute = map(int, cell.strip("mins").split("hrs "))
-            duration = timedelta(hours=hour, minutes=minute)
-            self.container.duration.append(duration)
-    
-    def get_location(self):
-        self.container.origin = self.origin
-        self.container.destination = self.destination
+    @staticmethod
+    def get_rows(soup):
+        return soup.find_all("ul", id=re.compile("JourneyResylt"))
 
-    def reverse_trip(self):
-        self.origin, self.destination = self.destination, self.origin
+    def set_price(self, row):
+        price = row.contents[11].get_text(strip=True).split("$")[1]
+        self.container.row_info["Price"] = price
+
+    def set_departure(self, row):
+        cell = row.contents[3].get_text(strip=True)
+        departure = re.findall("[0-9]{2}:[0-9]{2}", cell)[0].zfill(5)
+        self.container.row_info["Departure"] = departure
+    
+    def set_arrival(self, row):
+        cell = row.contents[3].get_text(strip=True)
+        arrival = re.findall("[0-9]{2}:[0-9]{2}", cell)[1].zfill(5)
+        self.container.row_info["Arrival"] = arrival
+
+    def set_duration(self, row):
+        duration_unfmt = row.contents[5].get_text(strip=True).strip("mins")
+        duration_fmt = [x.zfill(2) for x in duration_unfmt.split("hrs ")]
+        duration = ':'.join(duration_fmt)
+        self.container.row_info["Duration"] = duration
+    
+    def set_locations(self):
+        self.container.row_info["Origin"] = self.origin
+        self.container.row_info["Destination"] = self.destination

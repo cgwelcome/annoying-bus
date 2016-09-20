@@ -1,11 +1,13 @@
 from datetime import datetime
 from .megabus import MegabusWebsite 
+from .viarail import ViaRailWebsite
 from .scraper import Scraper
 
 class AnnoyingBus(object):
     def __init__(self):
         self.megabus = MegabusWebsite()
-        self.websites = [self.megabus]
+        self.viarail = ViaRailWebsite()
+        self.websites = [self.megabus, self.viarail]
         self.days = 1
         self.date = datetime.today()
 
